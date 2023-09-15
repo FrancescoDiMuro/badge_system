@@ -1,2 +1,4 @@
 *.db-journal
 *.sqbpro
+*__pycache__*
+*ruff*
