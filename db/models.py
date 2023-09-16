@@ -1,6 +1,6 @@
 from __future__ import annotations
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, Uuid, Table, Column
+from sqlalchemy import ForeignKey
 from typing import List
 from uuid import UUID  # https://docs.sqlalchemy.org/en/20/orm/declarative_tables.html#mapped-column-derives-the-datatype-and-nullability-from-the-mapped-annotation
 
@@ -15,7 +15,7 @@ def now_with_timezone(tz: str = 'Europe/Rome'):
 class Base(DeclarativeBase):
     pass
 
-class Users(Base):
+class User(Base):
 
     __tablename__ = 'users'
 
@@ -28,16 +28,16 @@ class Users(Base):
     updated_at: Mapped[str] = mapped_column(nullable=True)
     deleted_at: Mapped[str] = mapped_column(nullable=True)
 
-class BadgeReaders_Badges(Base):
+class BadgeReader_Badge(Base):
 
     __tablename__ = 'badge_readers_badges'
 
     badge_reader_id: Mapped[UUID] = mapped_column(ForeignKey('badge_readers.id'), primary_key=True, nullable=False)
     badge_id: Mapped[UUID] = mapped_column(ForeignKey('badges.id'), primary_key=True, nullable=False)
-    badge_reader: Mapped[BadgeReaders] = relationship(back_populates='badges')
-    badge: Mapped[Badges] = relationship(back_populates='badge_readers')
+    badge_reader: Mapped[BadgeReader] = relationship(back_populates='badges')
+    badge: Mapped[Badge] = relationship(back_populates='badge_readers')
 
-class BadgeReaders(Base):
+class BadgeReader(Base):
 
     __tablename__ = 'badge_readers'
 
@@ -47,9 +47,9 @@ class BadgeReaders(Base):
     created_at: Mapped[str] = mapped_column(nullable=False, default=now_with_timezone)
     updated_at: Mapped[str] = mapped_column(nullable=True)
     deleted_at: Mapped[str] = mapped_column(nullable=True)
-    badges: Mapped[List[BadgeReaders_Badges]] = relationship(back_populates='badge_reader')
+    badges: Mapped[List[BadgeReader_Badge]] = relationship(back_populates='badge_reader')
 
-class Badges(Base):
+class Badge(Base):
 
     __tablename__ = 'badges'
 
@@ -59,9 +59,9 @@ class Badges(Base):
     updated_at: Mapped[str] = mapped_column(nullable=True)
     deleted_at: Mapped[str] = mapped_column(nullable=True)
     user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id'))
-    badge_readers: Mapped[List[BadgeReaders_Badges]] = relationship(back_populates='badge')
+    badge_readers: Mapped[List[BadgeReader_Badge]] = relationship(back_populates='badge')
     
-class Accesses(Base):
+class Access(Base):
 
     __tablename__ = 'accesses'
 
