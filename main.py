@@ -1,64 +1,44 @@
-from db.utils import db_connect
-from db.models import User, BadgeReader, Badge, BadgeReader_Badge, Access
-from db.dummy_data import dummy_users, dummy_badge_readers, dummy_badges
 from sqlalchemy.orm import Session
-from sqlalchemy import select, update, and_
-from uuid import UUID, uuid4
-from sqlalchemy.exc import NoResultFound
+
+from db.utils import db_connect
 from db.utils import now_with_timezone
 
+from fastapi import FastAPI
+from db.users.utils import read_users, read_user_by_id
 
-if __name__ == '__main__':
+from db.dtos import User
 
-    # Connect to the database
-    engine = db_connect(create_metadata=True, echo=True)
-    if engine is not None:
-               
-        # Create the session
-        with Session(bind=engine) as session:
-
-            # badge_ids = session.execute(select(Badge.id)).all()           
-            # TEST_BADGE_ID = badge_ids[randint(0, len(badge_ids) - 1)][0]
-
-            # badge_reader_ids = session.execute(select(BadgeReader.id)).all()            
-            # TEST_BADGE_READER_ID = badge_reader_ids[randint(0, len(badge_reader_ids) - 1)][0]
-
-            TEST_BADGE_ID: UUID = UUID('e3cc0cc89e234ae69b0e02f391428323')
-            TEST_BADGE_READER_ID: UUID = UUID('7979a93fd0ff45b588845a4d38a6f2da')
+from uuid import UUID
 
 
-            # Check if User has already badged to a specific BadgeReader
-            sql_statement = select(Access.id) \
-                            .where(and_( \
-                                Access.badge_id == TEST_BADGE_ID),
-                                Access.badge_reader_id == TEST_BADGE_READER_ID,
-                                Access.out_timestamp.is_(None))
-                        
-            try:
-                # Using 'execute' instead of 'scalars' to get advantage of being able to obtain
-                # the values of selected columns
-                access_id = session.execute(sql_statement).one()[0]
-            except NoResultFound:
-                
-                # Simulate access from user
-                new_access = {
-                    'id': uuid4(),
-                    'badge_id': TEST_BADGE_ID,
-                    'badge_reader_id': TEST_BADGE_READER_ID
-                }
+# Connect to the database
+engine = db_connect(create_metadata=False, echo=True)
+if engine is not None:
+            
+    # Create the session
+    with Session(bind=engine) as session:
+        app = FastAPI()
 
-                # Create the new access
-                access = Access(**new_access)
-                session.add(access)
-                session.commit()
+@app.get('/')
+async def root():
+    return {'message': 'Root directory'}
 
-            else:
+@app.get('/users')
+async def get_users(name_like: str = '%', surname_like: str = '%', email_like: str = '%'):
+    
+    users: list[User] = []
+    
+    db_users = read_users(session, name_like, surname_like, email_like)
 
-                # Create the update statement
-                sql_statement = update(Access) \
-                                .where(Access.id == access_id) \
-                                .values(out_timestamp=now_with_timezone())
-                
-                session.execute(sql_statement)
-                session.commit()
+    for db_user in db_users:
+        users.append(User(**db_user))
+
+    return users
+
+@app.get('/users/{user_id}')
+async def get_user_by_id(user_id: UUID):
+      
+    db_user = read_user_by_id(session=session, user_id=user_id)
+    if isinstance(db_user, dict):
+        return User(**db_user)
                 
