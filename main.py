@@ -1,56 +1,64 @@
 from db.utils import db_connect
-from db.models import Users, BadgeReaders, Badges, BadgeReaders_Badges
+from db.models import User, BadgeReader, Badge, BadgeReader_Badge, Access
+from db.dummy_data import dummy_users, dummy_badge_readers, dummy_badges
 from sqlalchemy.orm import Session
-from uuid import uuid4, UUID
+from sqlalchemy import select, update, and_
+from uuid import UUID, uuid4
+from sqlalchemy.exc import NoResultFound
+from db.utils import now_with_timezone
 
 
 if __name__ == '__main__':
 
-    # Create the engine for SQLAlchemy
+    # Connect to the database
     engine = db_connect(create_metadata=True, echo=True)
     if engine is not None:
                
-        # Create Session
-        # Session = sessionmaker(bind=engine)
-
+        # Create the session
         with Session(bind=engine) as session:
 
-            new_user: dict = {'id': uuid4(),
-                        'name': 'Giovanni',
-                        'surname': 'Verdi',
-                        'email': 'giovanni.verdi@somedomain.com',
-                        'phone': '+391234567890'
-                        }
-            
-            u = Users(**new_user)
-            session.add(u)
-            session.commit()            
-        
-            badge_reader: dict = {'id': uuid4(),
-                                  'ip_address': '192.168.150.11',
-                                  'location': 'Officina'}
-            
-            br = BadgeReaders(**badge_reader)
-            # br.__dict__.get('id')
-            
-            session.add(br)
-            session.commit()
+            # badge_ids = session.execute(select(Badge.id)).all()           
+            # TEST_BADGE_ID = badge_ids[randint(0, len(badge_ids) - 1)][0]
 
-            badge: dict = {'id': uuid4(),
-                           'code': '5678',
-                           'user_id': UUID('d844b4f8f96c459ca89d4f99a8445c5d')}
-            
-            # p = Parent()
-            # a = Association(extra_data="some data")
-            # a.child = Child()
-            # p.children.append(a)
+            # badge_reader_ids = session.execute(select(BadgeReader.id)).all()            
+            # TEST_BADGE_READER_ID = badge_reader_ids[randint(0, len(badge_reader_ids) - 1)][0]
+
+            TEST_BADGE_ID: UUID = UUID('e3cc0cc89e234ae69b0e02f391428323')
+            TEST_BADGE_READER_ID: UUID = UUID('7979a93fd0ff45b588845a4d38a6f2da')
 
 
-            b = Badges(**badge)
-            brb = BadgeReaders_Badges()
-            brb.badge_reader = br
-            print(f'{brb.badge_reader.__dict__=}')
-            b.badge_readers.append(brb)
-            
-            session.add(b)
-            session.commit()
+            # Check if User has already badged to a specific BadgeReader
+            sql_statement = select(Access.id) \
+                            .where(and_( \
+                                Access.badge_id == TEST_BADGE_ID),
+                                Access.badge_reader_id == TEST_BADGE_READER_ID,
+                                Access.out_timestamp.is_(None))
+                        
+            try:
+                # Using 'execute' instead of 'scalars' to get advantage of being able to obtain
+                # the values of selected columns
+                access_id = session.execute(sql_statement).one()[0]
+            except NoResultFound:
+                
+                # Simulate access from user
+                new_access = {
+                    'id': uuid4(),
+                    'badge_id': TEST_BADGE_ID,
+                    'badge_reader_id': TEST_BADGE_READER_ID
+                }
+
+                # Create the new access
+                access = Access(**new_access)
+                session.add(access)
+                session.commit()
+
+            else:
+
+                # Create the update statement
+                sql_statement = update(Access) \
+                                .where(Access.id == access_id) \
+                                .values(out_timestamp=now_with_timezone())
+                
+                session.execute(sql_statement)
+                session.commit()
+                
