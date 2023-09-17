@@ -2,3 +2,4 @@
 *.sqbpro
 *__pycache__*
 *ruff*
+*.db
