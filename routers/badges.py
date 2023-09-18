@@ -26,12 +26,41 @@ API_ROUTER_CONFIG: dict = {
     'tags': ['badges']
 }
 
+GET_BADGES_METADATA: dict = {
+    'summary': 'GET /badges', 
+    'description': 'This endpoint lets you get a list of configured badges (if any).', 
+    'response_model': list[Badge]
+}
 
-# Create the router with given config
+GET_BADGES_BY_ID_METADATA: dict = {
+    'summary': 'GET /badge/{badge_id}', 
+    'description': 'This endpoint lets you get a badge selecting it by its id (if any).', 
+    'response_model': Badge
+}
+
+POST_BADGES_METADATA: dict = {
+    'summary': 'POST /badges', 
+    'description': 'This endpoint lets you create a new badge.', 
+    'response_model': Badge
+}
+
+PATCH_BADGES_METADATA: dict = {
+    'summary': 'PATCH /badges/{badges_id}', 
+    'description': 'This endpoint lets you update the information of an existing badge, specifying its id.', 
+    'response_model': Badge
+}
+
+DELETE_BADGES_METADATA: dict = {
+    'summary': 'DELETE /badges/{badge_id}', 
+    'description': 'This endpoint lets you delete a badge, specifying its id.', 
+    'response_model': None
+}
+
+
 router = APIRouter(**API_ROUTER_CONFIG)
 
 
-@router.get('/', response_model=list[Badge])
+@router.get('/', **GET_BADGES_METADATA)
 async def get_badges(code_like: Annotated[str, Query(description='Filter for the badge code')] = '%',
                      db_session: Session = Depends(get_db)):
     
@@ -46,7 +75,7 @@ async def get_badges(code_like: Annotated[str, Query(description='Filter for the
     return badges
 
 
-@router.get('/{badge_id}', response_model=Badge)
+@router.get('/{badge_id}', **GET_BADGES_BY_ID_METADATA)
 async def get_badge_by_id(badge_id: Annotated[UUID, Path(description='Badge ID of the Badge to select')], 
                           db_session: Session = Depends(get_db)):
       
@@ -57,26 +86,26 @@ async def get_badge_by_id(badge_id: Annotated[UUID, Path(description='Badge ID o
         raise HTTPException(status_code=200, detail='No badge found')
     
 
-@router.post('/', response_model=Badge)
+@router.post('/', **POST_BADGES_METADATA)
 async def post_badge(badge_post: BadgePost, db_session: Session = Depends(get_db)):
 
-    # Obtaining badge input
+    # Get user input in a dict
     new_badge: dict = badge_post.model_dump()
     
-    # Adding the UUID to the badge input dict
+    # Assign id to the new record
     new_badge['id'] = uuid4()
 
-    # Create the badge
+    # Create the record
     badge = create_badge(db_session, new_badge)
     
-    # Make the badge a schemas.Badge
+    # Convert the record to a valid schema object
     badge = Badge(**badge)
 
     return badge
 
 
-@router.patch('/{badge_id}', response_model=Badge)
-def patch_badge_reader(badge_id: Annotated[UUID, Path(description='Badge ID of the Badge to update')], 
+@router.patch('/{badge_id}', **PATCH_BADGES_METADATA)
+def patch_badge_reader(badge_id: Annotated[UUID, Path(description='Badge ID of the badge to update')], 
                        badge: BadgePatch, 
                        db_session: Session = Depends(get_db)):
     
@@ -93,8 +122,8 @@ def patch_badge_reader(badge_id: Annotated[UUID, Path(description='Badge ID of t
         raise HTTPException(status_code=422, detail='Invalid input')
     
 
-@router.delete('/{badge_id}')
-def delete_badge(badge_id: Annotated[UUID, Path(description='Badge ID of the Badge to delete')],
+@router.delete('/{badge_id}', **DELETE_BADGES_METADATA)
+def delete_badge(badge_id: Annotated[UUID, Path(description='Badge ID of the badge to delete')],
                  db_session: Session = Depends(get_db)):
     
     deleted_badge_id: dict = remove_badge(db_session, badge_id)
@@ -103,3 +132,4 @@ def delete_badge(badge_id: Annotated[UUID, Path(description='Badge ID of the Bad
         return deleted_badge_id
     else:        
         raise HTTPException(status_code=200, detail='No badge found')
+    

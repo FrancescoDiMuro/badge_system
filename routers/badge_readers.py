@@ -26,12 +26,41 @@ API_ROUTER_CONFIG: dict = {
     'tags': ['badge_readers']
 }
 
+GET_BADGE_READERS_METADATA: dict = {
+    'summary': 'GET /badge_readers', 
+    'description': 'This endpoint lets you get a list of configured badge readers (if any).', 
+    'response_model': list[BadgeReader]
+}
 
-# Create the router with given config
+GET_BADGE_READERS_BY_ID_METADATA: dict = {
+    'summary': 'GET /badge_readers/{badge_reader_id}', 
+    'description': 'This endpoint lets you get a badge reader selecting it by its id (if any).', 
+    'response_model': BadgeReader
+}
+
+POST_BADGE_READERS_METADATA: dict = {
+    'summary': 'POST /badge_readers', 
+    'description': 'This endpoint lets you create a new badge reader.', 
+    'response_model': BadgeReader
+}
+
+PATCH_BADGE_READER_METADATA: dict = {
+    'summary': 'PATCH /badge_readers/{badge_reader_id}', 
+    'description': 'This endpoint lets you update the information of an existing badge reader, specifying its id.', 
+    'response_model': BadgeReader
+}
+
+DELETE_BADGE_READERS_METADATA: dict = {
+    'summary': 'DELETE /badge_readers/{badge_reader_id}', 
+    'description': 'This endpoint lets you delete a badge reader, specifying its id.', 
+    'response_model': None
+}
+
+
 router = APIRouter(**API_ROUTER_CONFIG)
 
 
-@router.get('/', response_model=list[BadgeReader])
+@router.get('/', **GET_BADGE_READERS_METADATA)
 async def get_badge_readers(ip_address_like: Annotated[str, Query(description='Filter for the badge reader IP address')] = '%', 
                             location_like: Annotated[str, Query(description='Filter for the badge reader location')] = '%',                              
                             db_session: Session = Depends(get_db)):
@@ -47,7 +76,7 @@ async def get_badge_readers(ip_address_like: Annotated[str, Query(description='F
     return badge_readers
 
 
-@router.get('/{badge_reader_id}', response_model=BadgeReader)
+@router.get('/{badge_reader_id}', **GET_BADGE_READERS_BY_ID_METADATA)
 async def get_badge_reader_by_id(badge_reader_id: Annotated[UUID, Path(description='BadgeReader ID of the BadgeReader to select')], 
                                  db_session: Session = Depends(get_db)):
       
@@ -58,27 +87,28 @@ async def get_badge_reader_by_id(badge_reader_id: Annotated[UUID, Path(descripti
         raise HTTPException(status_code=200, detail='No badge reader found')
     
 
-@router.post('/', response_model=BadgeReader)
+@router.post('/', **POST_BADGE_READERS_METADATA)
 async def post_badge_reader(badge_reader_post: BadgeReaderPost, db_session: Session = Depends(get_db)):
 
-    # Obtaining badge reader input
+    # Get user input in a dict
     new_badge_reader: dict = badge_reader_post.model_dump()
     
-    # Adding the UUID to the badge reader input dict
+    # Assign id to the new record
     new_badge_reader['id'] = uuid4()
 
-    # Create the badge reader
+    # Create the record
     badge_reader = create_badge_reader(db_session, new_badge_reader)
     
-    # Make the badge_reader a schemas.BadgeReader
+    # Convert the record to a valid schema object
     badge_reader = BadgeReader(**badge_reader)
 
     return badge_reader
 
-@router.patch('/{badge_reader_id}', response_model=BadgeReader)
-def patch_badge_reader(badge_reader_id: Annotated[UUID, Path(description='BadgeReader ID of the BadgeReader to update')], 
-               badge_reader: BadgeReaderPatch, 
-               db_session: Session = Depends(get_db)):
+
+@router.patch('/{badge_reader_id}', **PATCH_BADGE_READER_METADATA)
+def patch_badge_reader(badge_reader_id: Annotated[UUID, Path(description='Badge reader ID of the badge reader to update')], 
+                       badge_reader: BadgeReaderPatch, 
+                       db_session: Session = Depends(get_db)):
     
     # Obtain badge reader data that has been updated, excluding what hasn't been set
     updated_badge_reader_info: dict = badge_reader.model_dump(exclude_unset=True)
@@ -93,9 +123,9 @@ def patch_badge_reader(badge_reader_id: Annotated[UUID, Path(description='BadgeR
         raise HTTPException(status_code=422, detail='Invalid input')
     
 
-@router.delete('/{badge_reader_id}')
-def delete_badge_reader(badge_reader_id: Annotated[UUID, Path(description='BadgeReader ID of the BadgeReader to delete')],
-                db_session: Session = Depends(get_db)):
+@router.delete('/{badge_reader_id}', **DELETE_BADGE_READERS_METADATA)
+def delete_badge_reader(badge_reader_id: Annotated[UUID, Path(description='Badge reader ID of the badge reader to delete')],
+                        db_session: Session = Depends(get_db)):
     
     deleted_badge_id: dict = remove_badge_reader(db_session, badge_reader_id)
     

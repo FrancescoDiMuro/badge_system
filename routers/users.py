@@ -26,12 +26,42 @@ API_ROUTER_CONFIG: dict = {
     'tags': ['users']
 }
 
+GET_USERS_METADATA: dict = {
+    'summary': 'GET /users', 
+    'description': 'This endpoint lets you get a list of configured users (if any).', 
+    'response_model': list[User]
+}
 
-# Create the router with given config
+GET_USERS_BY_ID_METADATA: dict = {
+    'summary': 'GET /users/{user_id}', 
+    'description': 'This endpoint lets you get a user selecting it by its id (if any).', 
+    'response_model': User
+}
+
+POST_USERS_METADATA: dict = {
+    'summary': 'POST /users', 
+    'description': 'This endpoint lets you create a new user.', 
+    'response_model': User
+}
+
+PATCH_USERS_METADATA: dict = {
+    'summary': 'PATCH /users/{user_id}', 
+    'description': 'This endpoint lets you update the information of an existing user, specifying its id.', 
+    'response_model': User
+}
+
+DELETE_USERS_METADATA: dict = {
+    'summary': 'DELETE /users/{user_id}', 
+    'description': 'This endpoint lets you delete a user, specifying its id.', 
+    'response_model': None
+}
+
+
+
 router = APIRouter(**API_ROUTER_CONFIG)
 
 
-@router.get('/', response_model=list[User])
+@router.get('/', **GET_USERS_METADATA)
 async def get_users(name_like: Annotated[str, Query(description='Filter for the user name')] = '%', 
                     surname_like: Annotated[str, Query(description='Filter for the user surname')] = '%', 
                     email_like: Annotated[str, Query(description='Filter for the user email')] = '%', 
@@ -48,8 +78,8 @@ async def get_users(name_like: Annotated[str, Query(description='Filter for the 
     return users
 
 
-@router.get('/{user_id}', response_model=User)
-async def get_user_by_id(user_id: Annotated[UUID, Path(description='User ID of the User to select')], db_session: Session = Depends(get_db)):
+@router.get('/{user_id}', **GET_USERS_BY_ID_METADATA)
+async def get_user_by_id(user_id: Annotated[UUID, Path(description='User ID of the user to select')], db_session: Session = Depends(get_db)):
       
     db_user = read_user_by_id(db_session, user_id)
     if db_user:
@@ -58,25 +88,26 @@ async def get_user_by_id(user_id: Annotated[UUID, Path(description='User ID of t
         raise HTTPException(status_code=200, detail='No user found')
     
 
-@router.post('/', response_model=User)
+@router.post('/', **POST_USERS_METADATA)
 async def post_user(user_post: UserPost, db_session: Session = Depends(get_db)):
-
-    # Obtaining user input
+    
+    # Get user input in a dict
     new_user: dict = user_post.model_dump()
     
-    # Adding the UUID to the user input dict
+    # Assign id to the new record
     new_user['id'] = uuid4()
-
-    # Create the user
+    
+    # Create the record
     user = create_user(db_session, new_user)
     
-    # Make the user a schemas.User
+    # Convert the record to a valid schema object
     user = User(**user)
 
     return user
 
-@router.patch('/{user_id}', response_model=User)
-def patch_user(user_id: Annotated[UUID, Path(description='User ID of the User to update')], 
+
+@router.patch('/{user_id}', **PATCH_USERS_METADATA)
+def patch_user(user_id: Annotated[UUID, Path(description='User ID of the user to update')], 
                user: UserPatch, 
                db_session: Session = Depends(get_db)):
     
@@ -93,8 +124,8 @@ def patch_user(user_id: Annotated[UUID, Path(description='User ID of the User to
         raise HTTPException(status_code=422, detail='Invalid input')
     
 
-@router.delete('/{user_id}')
-def delete_user(user_id: Annotated[UUID, Path(description='Used ID of the User to delete')],
+@router.delete('/{user_id}', **DELETE_USERS_METADATA)
+def delete_user(user_id: Annotated[UUID, Path(description='Used ID of the user to delete')],
                 db_session: Session = Depends(get_db)):
     
     deleted_user_id: dict = remove_user(db_session, user_id)
