@@ -9,11 +9,13 @@ class UserPost(BaseModel):
     surname: str
     email: EmailStr
     phone: str
+
         
 class User(UserPost):
     created_at: str
     updated_at: str | None = None
     deleted_at: str | None = None
+
 
 class UserPatch(BaseModel):
     name: str | None = None
@@ -21,15 +23,18 @@ class UserPatch(BaseModel):
     email: EmailStr | None = None
     phone: str | None = None
 
+
 class BadgePost(BaseModel):
     id: UUID | None = None
     code: int
+
 
 class Badge(BadgePost):
     created_at: str
     updated_at: str | None = None
     deleted_at: str | None = None
-    badge_reader_ids: list[UUID]
+    user_id: UUID | None = None
+    badge_reader_ids: list[UUID] | None = None
 
     class Config:
         from_attributes = True
@@ -37,6 +42,7 @@ class Badge(BadgePost):
 
 class BadgePatch(BaseModel):
     code: int | None = None
+    user_id: UUID | None = None
     badge_reader_ids: list[UUID] | None = None
 
 
@@ -60,3 +66,14 @@ class BadgeReaderPatch(BaseModel):
     ip_address: str | None = None
     location: str | None = None
     badge_ids: list[UUID] | None = None
+
+
+class AccessPost(BaseModel):
+    id: UUID | None = None    
+    badge_id: UUID
+    badge_reader_id: UUID
+
+
+class Access(AccessPost):
+    in_timestamp: str | None = None
+    out_timestamp: str | None = None
