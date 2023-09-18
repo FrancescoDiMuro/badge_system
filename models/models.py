@@ -1,13 +1,16 @@
 from __future__ import annotations
 from models.utils import now_with_timezone
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Table, Column, UUID
+from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
+from sqlalchemy.ext.hybrid import hybrid_property
 from typing import List
 from uuid import UUID  # https://docs.sqlalchemy.org/en/20/orm/declarative_tables.html#mapped-column-derives-the-datatype-and-nullability-from-the-mapped-annotation
 
 
 class Base(DeclarativeBase):
     pass
+
 
 class User(Base):
 
@@ -22,14 +25,13 @@ class User(Base):
     updated_at: Mapped[str] = mapped_column(nullable=True)
     deleted_at: Mapped[str] = mapped_column(nullable=True)
 
-class BadgeReader_Badge(Base):
 
-    __tablename__ = 'badge_readers_badges'
+badge_readers_badges = Table('badge_readers_badges',
+                             Base.metadata,
+                             Column('badge_reader_id', ForeignKey('badge_readers.id')),
+                             Column('badge_id', ForeignKey('badges.id'))
+                            )
 
-    badge_reader_id: Mapped[UUID] = mapped_column(ForeignKey('badge_readers.id'), primary_key=True, nullable=False)
-    badge_id: Mapped[UUID] = mapped_column(ForeignKey('badges.id'), primary_key=True, nullable=False)
-    badge_reader: Mapped[BadgeReader] = relationship(back_populates='badges')
-    badge: Mapped[Badge] = relationship(back_populates='badge_readers')
 
 class BadgeReader(Base):
 
@@ -41,7 +43,13 @@ class BadgeReader(Base):
     created_at: Mapped[str] = mapped_column(nullable=False, default=now_with_timezone)
     updated_at: Mapped[str] = mapped_column(nullable=True)
     deleted_at: Mapped[str] = mapped_column(nullable=True)
-    badges: Mapped[List[BadgeReader_Badge]] = relationship(back_populates='badge_reader')
+
+    badges = relationship('Badge', secondary=badge_readers_badges, back_populates='badge_readers')
+
+    @hybrid_property
+    def badge_ids(self):
+        return [badge.id for badge in self.badges]
+
 
 class Badge(Base):
 
@@ -53,8 +61,10 @@ class Badge(Base):
     updated_at: Mapped[str] = mapped_column(nullable=True)
     deleted_at: Mapped[str] = mapped_column(nullable=True)
     user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id'))
-    badge_readers: Mapped[List[BadgeReader_Badge]] = relationship(back_populates='badge')
-    
+
+    badge_readers = relationship('BadgeReader', secondary=badge_readers_badges, back_populates='badges')
+
+
 class Access(Base):
 
     __tablename__ = 'accesses'
