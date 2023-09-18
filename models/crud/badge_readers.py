@@ -1,17 +1,10 @@
-from sqlalchemy.orm import Session
-from sqlalchemy import (Select, 
-                        Insert, 
-                        Update, 
-                        select, 
-                        insert, 
-                        update, 
-                        and_)
-
-from sqlalchemy.exc import NoResultFound
-
 from models.models import BadgeReader, Badge
-from uuid import UUID
 from models.utils import now_with_timezone
+from sqlalchemy.orm import Session
+from sqlalchemy import (Select, Insert, Update, 
+                        select, insert, update, and_)
+from uuid import UUID
+
 
 def read_badge_readers(session: Session, ip_address_like: str, location_like: str) -> list[dict]:
   
@@ -26,13 +19,13 @@ def read_badge_readers(session: Session, ip_address_like: str, location_like: st
                                 ) \
                             .order_by(BadgeReader.created_at)
         
-    query_result = session.execute(sql_statement).all()
+    query_result = session.scalars(sql_statement).all()
 
     for record in query_result:        
-        badge_reader = {k: v for k, v in record[0].__dict__.items()
+        badge_reader = {k: v for k, v in record.__dict__.items()
                         if not k.startswith('_') and k != 'badges'}
         
-        badge_reader['badge_ids'] = record[0].badge_ids
+        badge_reader['badge_ids'] = record.badge_ids
         badge_readers.append(badge_reader)
     
     return badge_readers
@@ -48,17 +41,18 @@ def read_badge_reader_by_id(session: Session, badge_reader_id: UUID) -> dict:
                                 BadgeReader.id == badge_reader_id)) \
                             .order_by(BadgeReader.created_at)        
     
-    try:
-        query_result = session.execute(sql_statement).one()[0]        
-    except NoResultFound:        
-        return {}
-    
-    badge_reader = {k: v for k, v in query_result.__dict__.items()
-                        if not k.startswith('_') and k != 'badges'}
-    
-    badge_reader['badge_ids'] = query_result.badge_ids
+    query_result = session.scalars(sql_statement).one_or_none()
 
-    return badge_reader
+    if query_result:
+
+        badge_reader = {k: v for k, v in query_result.__dict__.items()
+                            if not k.startswith('_') and k != 'badges'}
+        
+        badge_reader['badge_ids'] = query_result.badge_ids
+
+        return badge_reader
+    
+    return {}
 
 
 def create_badge_reader(session: Session, new_badge_reader: dict) -> dict:
@@ -67,7 +61,7 @@ def create_badge_reader(session: Session, new_badge_reader: dict) -> dict:
                             .values(**new_badge_reader) \
                             .returning(BadgeReader)
     
-    badge_reader: dict = session.scalars(sql_statement).all()[0]
+    badge_reader: dict = session.scalars(sql_statement).first()
     badge_reader = {k: v for k, v in badge_reader.__dict__.items() if not k.startswith('_')}
 
     if badge_reader:
@@ -88,7 +82,7 @@ def update_badge_reader(session: Session, badge_reader_id: UUID, updated_badge_r
     sql_statement = select(BadgeReader) \
                     .where(BadgeReader.id == badge_reader_id)
 
-    current_badge_reader = session.execute(sql_statement).scalars().first()
+    current_badge_reader = session.scalars(sql_statement).first()
 
     if current_badge_reader:
         current_badge_reader.updated_at = now_with_timezone()
