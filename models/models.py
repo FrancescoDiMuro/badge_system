@@ -3,6 +3,7 @@ from models.utils import now_with_timezone
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, Table, Column, UUID
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.associationproxy import association_proxy
 from uuid import UUID  # https://docs.sqlalchemy.org/en/20/orm/declarative_tables.html#mapped-column-derives-the-datatype-and-nullability-from-the-mapped-annotation
 
 
@@ -61,6 +62,10 @@ class Badge(Base):
     user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id'))
 
     badge_readers = relationship('BadgeReader', secondary=badge_readers_badges, back_populates='badges')
+
+    @hybrid_property
+    def badge_reader_ids(self):
+        return [badge_reader.id for badge_reader in self.badge_readers]
 
 
 class Access(Base):
