@@ -1,10 +1,9 @@
 from __future__ import annotations
 from models.utils import now_with_timezone
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, Table, Column, UUID
+from sqlalchemy import ForeignKey, Table, Column
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.ext.associationproxy import association_proxy
-from uuid import UUID  # https://docs.sqlalchemy.org/en/20/orm/declarative_tables.html#mapped-column-derives-the-datatype-and-nullability-from-the-mapped-annotation
+from uuid import UUID
 
 
 class Base(DeclarativeBase):
@@ -25,6 +24,7 @@ class User(Base):
     deleted_at: Mapped[str] = mapped_column(nullable=True)
 
 
+# Association table for managing many-to-many relationship between BadgeReaders and Badges
 badge_readers_badges = Table('badge_readers_badges',
                              Base.metadata,
                              Column('badge_reader_id', ForeignKey('badge_readers.id')),
@@ -59,7 +59,7 @@ class Badge(Base):
     created_at: Mapped[str] = mapped_column(nullable=False, default=now_with_timezone)
     updated_at: Mapped[str] = mapped_column(nullable=True)
     deleted_at: Mapped[str] = mapped_column(nullable=True)
-    user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id'))
+    user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id'), nullable=True)
 
     badge_readers = relationship('BadgeReader', secondary=badge_readers_badges, back_populates='badges')
 
