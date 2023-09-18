@@ -41,8 +41,8 @@ async def get_badge_readers(ip_address_like: Annotated[str, Query(description='F
     db_badge_readers = read_badge_readers(db_session, ip_address_like, location_like)
     if not db_badge_readers:
         raise HTTPException(status_code=200, detail='No badge readers found')
-    else:                
-        badge_readers = [BadgeReader(**db_badge_reader) for db_badge_reader in db_badge_readers]
+    else:
+        badge_readers = [db_badge_reader for db_badge_reader in db_badge_readers]
 
     return badge_readers
 
