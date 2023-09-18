@@ -62,20 +62,7 @@ def read_badge_reader_by_id(session: Session, badge_reader_id: UUID) -> dict:
 
 
 def create_badge_reader(session: Session, new_badge_reader: dict) -> dict:
-    
-    # badges: list[Badge] = []
-
-    # badge_ids = new_badge_reader['badge_ids']
-
-    # sql_statement: Select = select(Badge) \
-                            # .where(Badge.id.in_(badge_ids))
-    
-    # query_result = session.scalars(sql_statement).all()
-    # for badge in query_result:
-    #     badges.append(Badge(**{k: v for k, v in badge.__dict__.items() if not k.startswith('_')}))
-
-    # new_badge_reader['badges'] = badges   
-    
+        
     sql_statement: Insert = insert(BadgeReader) \
                             .values(**new_badge_reader) \
                             .returning(BadgeReader)
