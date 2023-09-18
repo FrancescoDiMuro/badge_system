@@ -11,7 +11,7 @@ db_config_params: dict = {'DB_TYPE': 'sqlite',
 DB_CONNECTION_STRING: str = '{DB_TYPE}+{DB_API}:///{DB_RELATIVE_FILE_PATH}'.format(**db_config_params)
 
 engine: Engine = create_engine(DB_CONNECTION_STRING, 
-                               connect_args={'check_same_thread': False})
+                               connect_args={'check_same_thread': False}, echo=True)
 Base.metadata.create_all(bind=engine)
 
 SessionLocal = sessionmaker(bind=engine)
