@@ -3,7 +3,7 @@ from pydantic import BaseModel, EmailStr
 from uuid import UUID
 
 
-class UserPost(BaseModel):      
+class UserPost(BaseModel):
     id: UUID | None = None
     name: str
     surname: str
@@ -34,10 +34,17 @@ class Badge(BadgePost):
     class Config:
         from_attributes = True
 
+
+class BadgePatch(BaseModel):
+    code: int | None = None
+    badge_reader_ids: list[UUID] | None = None
+
+
 class BadgeReaderPost(BaseModel):
     id: UUID | None = None
     ip_address: str
-    location: str    
+    location: str
+
 
 class BadgeReader(BadgeReaderPost):
     created_at: str
@@ -47,6 +54,7 @@ class BadgeReader(BadgeReaderPost):
 
     class Config:
         from_attributes = True
+
 
 class BadgeReaderPatch(BaseModel):
     ip_address: str | None = None
