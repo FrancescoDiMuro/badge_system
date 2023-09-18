@@ -14,6 +14,8 @@ The aim of the project is to give a general idea of how to structure an applicat
 - [Pydantic](https://docs.pydantic.dev/latest/  ) (included in FastAPI) to validate request and response data;
 - [ruff](https://docs.astral.sh/ruff/) as code linter.
 
+
+
 ## Installation
 
 After downloading the project from GitHub, you need to continue installing the requirements via the command:
@@ -59,3 +61,9 @@ From this moment you can use the application accessing it though the URL:
 ```
 http://127.0.0.1:8080/
 ```
+
+For a complete overview of the APIs and to access a playground of the same, just visit the link:
+```
+http://127.0.0.1:8080/docs
+```
+
