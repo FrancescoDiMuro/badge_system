@@ -26,14 +26,14 @@ CREATE TABLE IF NOT EXISTS "badges" (
 	"updated_at"	VARCHAR,
 	"deleted_at"	VARCHAR,
 	"user_id"	CHAR(32),
-	PRIMARY KEY("id"),
-	FOREIGN KEY("user_id") REFERENCES "users"("id")
+	FOREIGN KEY("user_id") REFERENCES "users"("id"),
+	PRIMARY KEY("id")
 );
 CREATE TABLE IF NOT EXISTS "badge_readers_badges" (
 	"badge_reader_id"	CHAR(32),
 	"badge_id"	CHAR(32),
-	FOREIGN KEY("badge_reader_id") REFERENCES "badge_readers"("id"),
-	FOREIGN KEY("badge_id") REFERENCES "badges"("id")
+	FOREIGN KEY("badge_id") REFERENCES "badges"("id"),
+	FOREIGN KEY("badge_reader_id") REFERENCES "badge_readers"("id")
 );
 CREATE TABLE IF NOT EXISTS "accesses" (
 	"id"	CHAR(32) NOT NULL,
@@ -41,13 +41,13 @@ CREATE TABLE IF NOT EXISTS "accesses" (
 	"out_timestamp"	VARCHAR,
 	"badge_id"	CHAR(32) NOT NULL,
 	"badge_reader_id"	CHAR(32) NOT NULL,
-	PRIMARY KEY("id"),
 	FOREIGN KEY("badge_id") REFERENCES "badges"("id"),
-	FOREIGN KEY("badge_reader_id") REFERENCES "badge_readers"("id")
+	FOREIGN KEY("badge_reader_id") REFERENCES "badge_readers"("id"),
+	PRIMARY KEY("id")
 );
 INSERT INTO "users" ("id","name","surname","email","phone","created_at","updated_at","deleted_at") VALUES ('539b82d462ea494bb0a4f8888442df5e','Mario','Rossi','mario.rossi@somedomain.com','+391234567890','2023-09-16 12:10:40+0200',NULL,NULL),
  ('fde0bc87558d4e8282a92685c4c80058','Giovanni','Verdi','giovanni.verdi@somedomain.com','+390000000000','2023-09-16 12:10:40+0200',NULL,NULL),
- ('7ccc293158f8481d84cb8c4247a62c3c','Francesco','Di Muro','dimurofrancesco@someemaildomain.it','+393801234567','2023-09-16 12:10:40+0200',NULL,NULL),
+ ('7ccc293158f8481d84cb8c4247a62c3c','Francesco','Di Muro','dimurofrancesco@virgilio.it','+393801234567','2023-09-16 12:10:40+0200',NULL,NULL),
  ('6e82e903158544f992e7497628bd06c9','Balatina','Antonina','balatina.antonina@gmail.com','+3912354785963','2023-09-18 20:37:11+0200',NULL,NULL),
  ('a657bc9ef3d44186bebe663baab44a77','Gustov','Fonteravich','fonteravich.gustov@gmail.com','+3905506677','2023-09-18 22:58:50+0200','2023-09-18 23:00:30+0200','2023-09-18 23:09:57+0200');
 INSERT INTO "badge_readers" ("id","ip_address","location","created_at","updated_at","deleted_at") VALUES ('60e9dd146b424b9c9f2813323b5ac97c','192.168.150.10','Ingresso principale','2023-09-16 12:10:40+0200',NULL,NULL),
@@ -80,9 +80,10 @@ INSERT INTO "badge_readers_badges" ("badge_reader_id","badge_id") VALUES ('60e9d
  ('3326bf360a964c2a8b51ac09ef014adb','c9a34e3f488249419b97e427200e8317'),
  ('151cc77b297b44f695b49048ec4b7557','a0bbc41e122546ffa4f6eb1592e68930'),
  ('151cc77b297b44f695b49048ec4b7557','c9a34e3f488249419b97e427200e8317');
-INSERT INTO "accesses" ("id","in_timestamp","out_timestamp","badge_id","badge_reader_id") VALUES ('b5e1da86adb643faba91349c59628d84','2023-09-18 22:38:35+0200','2023-09-18 22:47:19+0200','6e82e903158544f992e7497628bd06c9','60e9dd146b424b9c9f2813323b5ac97c'),
- ('17d74c5ceb4b4376ac425dea8b0e10cc','2023-09-18 22:47:29+0200','2023-09-18 22:47:46+0200','6e82e903158544f992e7497628bd06c9','60e9dd146b424b9c9f2813323b5ac97c'),
- ('9ae64973b73645058a180378f146ed8e','2023-09-18 23:27:44+0200','2023-09-18 23:27:59+0200','7ccc293158f8481d84cb8c4247a62c3c','60e9dd146b424b9c9f2813323b5ac97c'),
- ('4208f9c4ddb84e0fbc013001abbd52db','2023-09-18 23:28:31+0200','2023-09-18 23:28:47+0200','7ccc293158f8481d84cb8c4247a62c3c','60e9dd146b424b9c9f2813323b5ac97c'),
- ('f17e0c4c6de14127a85320fa85e371a9','2023-09-19 00:31:31+0200','2023-09-19 00:34:19+0200','c9a34e3f488249419b97e427200e8317','bda4c5d9f12b4710939e054d44c3d422');
+INSERT INTO "accesses" ("id","in_timestamp","out_timestamp","badge_id","badge_reader_id") VALUES ('b5e1da86adb643faba91349c59628d84','2023-09-18 22:38:35+0200','2023-09-18 22:47:19+0200','1820cfffb91047c1944088977a453198','60e9dd146b424b9c9f2813323b5ac97c'),
+ ('17d74c5ceb4b4376ac425dea8b0e10cc','2023-09-18 22:47:29+0200','2023-09-18 22:47:46+0200','1820cfffb91047c1944088977a453198','60e9dd146b424b9c9f2813323b5ac97c'),
+ ('9ae64973b73645058a180378f146ed8e','2023-09-18 23:27:44+0200','2023-09-18 23:27:59+0200','c9a34e3f488249419b97e427200e8317','60e9dd146b424b9c9f2813323b5ac97c'),
+ ('4208f9c4ddb84e0fbc013001abbd52db','2023-09-18 23:28:31+0200','2023-09-18 23:28:47+0200','c9a34e3f488249419b97e427200e8317','60e9dd146b424b9c9f2813323b5ac97c'),
+ ('f17e0c4c6de14127a85320fa85e371a9','2023-09-19 00:31:31+0200','2023-09-19 00:34:19+0200','c9a34e3f488249419b97e427200e8317','bda4c5d9f12b4710939e054d44c3d422'),
+ ('7635567059ec4622b3f65d45a49bebfa','2023-09-19 13:07:57+0200','2023-09-19 13:08:20+0200','c9a34e3f488249419b97e427200e8317','847d73a35128425b8f6ccf124b7eea72');
 COMMIT;
