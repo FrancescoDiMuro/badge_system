@@ -1,0 +1,3 @@
+docker volume create app-data
+docker image build . --tag "badge_system_image"
+docker container run -d --name badge_system_container --mount type=volume,source=app-db,destination=/app/models/db/data.db -p 8080:8080 badge_system_image

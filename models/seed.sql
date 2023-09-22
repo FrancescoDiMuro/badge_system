@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS "accesses" (
 );
 INSERT INTO "users" ("id","name","surname","email","phone","created_at","updated_at","deleted_at") VALUES ('539b82d462ea494bb0a4f8888442df5e','Mario','Rossi','mario.rossi@somedomain.com','+391234567890','2023-09-16 12:10:40+0200',NULL,NULL),
  ('fde0bc87558d4e8282a92685c4c80058','Giovanni','Verdi','giovanni.verdi@somedomain.com','+390000000000','2023-09-16 12:10:40+0200',NULL,NULL),
- ('7ccc293158f8481d84cb8c4247a62c3c','Francesco','Di Muro','dimurofrancesco@virgilio.it','+393801234567','2023-09-16 12:10:40+0200',NULL,NULL),
+ ('7ccc293158f8481d84cb8c4247a62c3c','Francesco','Di Muro','dimurofrancesco@somedomain.it','+393801234567','2023-09-16 12:10:40+0200',NULL,NULL),
  ('6e82e903158544f992e7497628bd06c9','Balatina','Antonina','balatina.antonina@gmail.com','+3912354785963','2023-09-18 20:37:11+0200',NULL,NULL),
  ('a657bc9ef3d44186bebe663baab44a77','Gustov','Fonteravich','fonteravich.gustov@gmail.com','+3905506677','2023-09-18 22:58:50+0200','2023-09-18 23:00:30+0200','2023-09-18 23:09:57+0200');
 INSERT INTO "badge_readers" ("id","ip_address","location","created_at","updated_at","deleted_at") VALUES ('60e9dd146b424b9c9f2813323b5ac97c','192.168.150.10','Ingresso principale','2023-09-16 12:10:40+0200',NULL,NULL),

@@ -37,13 +37,13 @@ router = APIRouter(**API_ROUTER_CONFIG)
 
 
 @router.get('/', **GET_ACCESSES_METADATA)
-async def get_users(in_timestamp: Annotated[str, Query(description='Filter for in_timestamp')] = '%', 
-                    out_timestamp: Annotated[str, Query(description='Filter for out_timestamp')] = '%', 
+async def get_users(in_timestamp_min: Annotated[str, Query(description='Filter for in_timestamp_min')] = '', 
+                    in_timestamp_max: Annotated[str, Query(description='Filter for in_timestamp_min')] = '', 
                     db_session: Session = Depends(get_db)):
     
     accesses: list[Access] = []
     
-    db_accesses = read_accesses(db_session, in_timestamp, out_timestamp)
+    db_accesses = read_accesses(db_session, in_timestamp_min, in_timestamp_max)
     if not db_accesses:
         raise HTTPException(status_code=200, detail='No accesses found')
     else:                

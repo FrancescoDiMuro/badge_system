@@ -47,7 +47,7 @@ class BadgeReader(Base):
 
     @hybrid_property
     def badge_ids(self):
-        return [badge.id for badge in self.badges]
+        return [badge.id for badge in self.badges if badge.deleted_at is None]
 
 
 class Badge(Base):
@@ -65,7 +65,7 @@ class Badge(Base):
 
     @hybrid_property
     def badge_reader_ids(self):
-        return [badge_reader.id for badge_reader in self.badge_readers]
+        return [badge_reader.id for badge_reader in self.badge_readers if badge_reader.deleted_at is None]
 
 
 class Access(Base):

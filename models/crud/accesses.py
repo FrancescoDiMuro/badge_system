@@ -1,16 +1,25 @@
-from sqlalchemy.orm import Session
+from models.models import Access
+from models.utils import now_with_timezone
 from sqlalchemy import (Select, Insert, Update, 
                         select, insert, update, and_)
-from models.models import Access
+from sqlalchemy.orm import Session
+import sqlalchemy.sql.functions as sqlfuncs
 from uuid import UUID, uuid4
-from models.utils import now_with_timezone
 
 
-def read_accesses(session: Session, in_timestamp: str, out_timestamp: str) -> list[dict]:
+def read_accesses(session: Session, in_timestamp_min: str, in_timestamp_max: str) -> list[dict]:
   
     accesses: list = []
+
+    if in_timestamp_min == '' or in_timestamp_max == '':
+        
+        sql_statement = select(sqlfuncs.min(Access.in_timestamp),
+                               sqlfuncs.max(Access.in_timestamp))                
+        
+        in_timestamp_min, in_timestamp_max = session.execute(sql_statement).all()[0]        
     
     sql_statement: Select = select(Access) \
+                            .where(Access.in_timestamp.between(in_timestamp_min, in_timestamp_max)) \
                             .order_by(Access.in_timestamp)
         
     query_result = session.scalars(sql_statement).all()
