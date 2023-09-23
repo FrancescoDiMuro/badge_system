@@ -3,8 +3,9 @@ from models.utils import now_with_timezone
 from sqlalchemy import (Select, Insert, Update, 
                         select, insert, update, and_)
 from sqlalchemy.orm import Session
-import sqlalchemy.sql.functions as sqlfuncs
 from uuid import UUID, uuid4
+
+import sqlalchemy.sql.functions as sqlfuncs
 
 
 def read_accesses(session: Session, in_timestamp_min: str, in_timestamp_max: str) -> list[dict]:
@@ -16,7 +17,7 @@ def read_accesses(session: Session, in_timestamp_min: str, in_timestamp_max: str
         sql_statement = select(sqlfuncs.min(Access.in_timestamp),
                                sqlfuncs.max(Access.in_timestamp))                
         
-        in_timestamp_min, in_timestamp_max = session.execute(sql_statement).all()[0]        
+        in_timestamp_min, in_timestamp_max = session.execute(sql_statement).all()[0]
     
     sql_statement: Select = select(Access) \
                             .where(Access.in_timestamp.between(in_timestamp_min, in_timestamp_max)) \
