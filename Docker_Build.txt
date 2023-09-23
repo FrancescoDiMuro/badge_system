@@ -1,3 +1,4 @@
-docker volume create app-data
+docker volume create app-db
 docker image build . --tag "badge_system_image"
-docker container run -d --name badge_system_container --mount type=volume,source=app-db,destination=/app/models/db/data.db -p 8080:8080 badge_system_image
+docker container run -d --name badge_system_container --mount type=volume,source=app-db,destination=/app/models/db -p 8080:8080 badge_system_image
+docker container exec -i -t badge_system_container sqlite3 /app/models/db/data.db -init /app/models/seed.sql .quit
