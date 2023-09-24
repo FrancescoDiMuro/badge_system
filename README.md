@@ -18,6 +18,8 @@ The aim of the project is to give a general idea of how to structure an applicat
 
 ## Installation
 
+#### Virtual Environment
+
 After downloading the project from GitHub, you need to continue installing the requirements via the command:
 
 ```
@@ -57,6 +59,22 @@ To exit the SQLite3 CLI, simply use the command:
 ```
 .quit 
 ```
+#### With Docker
+
+For a faster setup, you can use the <b>Dockerfile</b> with the following commands (to execute in the specified order):
+
+```
+docker volume create app-db
+docker image build . --tag "badge_system_image"
+docker container run -d --name badge_system_container --mount type=volume,source=app-db,destination=/app/models/db -p 8080:8080 badge_system_image
+docker container exec -i -t badge_system_container sqlite3 /app/models/db/data.db -init /app/models/seed.sql .quit
+```
+
+or using <b>Docker Compose</b> with the _docker-compose.yaml_ file
+```
+docker compose up -d
+```
+
 From this moment you can use the application accessing it though the URL:
 ```
 http://127.0.0.1:8080/
@@ -66,4 +84,3 @@ For a complete overview of the APIs and to access a playground of the same, just
 ```
 http://127.0.0.1:8080/docs
 ```
-
