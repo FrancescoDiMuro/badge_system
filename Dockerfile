@@ -1,5 +1,4 @@
 FROM python:3.11-slim-bookworm
-VOLUME "/app-db"
 WORKDIR /app
 COPY /models /app/models
 COPY /routers /app/routers

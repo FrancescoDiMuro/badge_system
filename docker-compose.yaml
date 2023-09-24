@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    container_name: badge_system_container
+
+    ports:
+      - "8080:8080/tcp"
+
+    volumes:
+      - app-db:/app/models/db
+
+volumes:
+  app-db:
+    external: true
