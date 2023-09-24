@@ -14,14 +14,14 @@ from uuid import UUID
 from models.utils import now_with_timezone
 
 def read_users(session: Session, name_like: str, surname_like: str, 
-               email_like: str) -> list[dict]:
+               email_like: str, is_deleted: bool) -> list[dict]:
   
     users: list = []
     
     sql_statement: Select = select(User) \
                             .where(
                                 and_( \
-                                    User.deleted_at.is_(None),
+                                    True if is_deleted else User.deleted_at.is_(None),
                                     User.name.like(name_like),
                                     User.surname.like(surname_like),
                                     User.email.like(email_like))

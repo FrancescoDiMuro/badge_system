@@ -64,12 +64,13 @@ router = APIRouter(**API_ROUTER_CONFIG)
 @router.get('/', **GET_USERS_METADATA)
 async def get_users(name_like: Annotated[str, Query(description='Filter for the user name')] = '%', 
                     surname_like: Annotated[str, Query(description='Filter for the user surname')] = '%', 
-                    email_like: Annotated[str, Query(description='Filter for the user email')] = '%', 
+                    email_like: Annotated[str, Query(description='Filter for the user email')] = '%',
+                    include_deleted: bool = None, 
                     db_session: Session = Depends(get_db)):
     
     users: list[User] = []
     
-    db_users = read_users(db_session, name_like, surname_like, email_like)
+    db_users = read_users(db_session, name_like, surname_like, email_like, include_deleted)
     if not db_users:
         raise HTTPException(status_code=200, detail='No users found')
     else:                
