@@ -1,13 +1,14 @@
 import schemas.user
 
+from models.utils import get_fields_from_model
 from models.user.user import User
 from sqlalchemy import Select, select, and_
 from sqlalchemy.orm import Session
 from uuid import UUID
 
 
-def read_users(session: Session, name_like: str, surname_like: str, 
-               email_like: str, include_deleted: bool) -> list[schemas.user.User]:
+def retrieve_users(session: Session, name_like: str, surname_like: str, 
+                   email_like: str, include_deleted: bool) -> list[schemas.user.User]:
   
     users: list[schemas.user.User] = []
     
@@ -21,27 +22,27 @@ def read_users(session: Session, name_like: str, surname_like: str,
                                 ) \
                             .order_by(User.created_at)
     
-    query_result = session.execute(sql_statement).all()
-    for record in query_result:
-        users.append(schemas.user.User(**{k: v for k, v in record[0].__dict__.items() 
-                      if not k.startswith('_')}))    
+    query_result = session.scalars(sql_statement).all()
+    for model in query_result:
+        model_fields : dict = get_fields_from_model(model)
+        users.append(schemas.user.User(**model_fields))
     
     return users
 
 
-def read_user_by_id(session: Session, user_id: UUID, include_deleted: bool) -> schemas.user.User | None:
-
-    user: schemas.user.User = None
+def retrieve_user_by_id(session: Session, user_id: UUID, include_deleted: bool) -> schemas.user.User | None:
     
     sql_statement: Select = select(User) \
-                            .where(and_( \
-                                True if include_deleted else User.deleted_at.is_(None),
-                                User.id == user_id)) \
-                            .order_by(User.created_at)             
+                            .where(
+                                and_( \
+                                    True if include_deleted else User.deleted_at.is_(None),
+                                    User.id == user_id)
+                                ) \
+                            .order_by(User.created_at)
     
     query_result = session.scalars(sql_statement).one_or_none()
     if query_result:
-        user = schemas.user.User(**{k: v for k, v in query_result.__dict__.items() if not k.startswith('_')})
+        user: schemas.user.User = schemas.user.User(**get_fields_from_model(query_result))
 
         return user
 
