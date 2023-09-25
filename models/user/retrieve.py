@@ -24,7 +24,7 @@ def retrieve_users(session: Session, name_like: str, surname_like: str,
     
     query_result = session.scalars(sql_statement).all()
     for model in query_result:
-        model_fields : dict = get_fields_from_model(model)
+        model_fields: dict = get_fields_from_model(model)
         users.append(schemas.user.User(**model_fields))
     
     return users
@@ -42,7 +42,8 @@ def retrieve_user_by_id(session: Session, user_id: UUID, include_deleted: bool) 
     
     query_result = session.scalars(sql_statement).one_or_none()
     if query_result:
-        user: schemas.user.User = schemas.user.User(**get_fields_from_model(query_result))
+        model_fields: dict = get_fields_from_model(query_result)
+        user: schemas.user.User = schemas.user.User(**model_fields)
 
         return user
 
