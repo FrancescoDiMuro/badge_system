@@ -6,13 +6,11 @@ from fastapi import (APIRouter,
 
 from models.db.utils import get_db
 
-from models.schemas import (User, 
-                            UserPost, 
-                            UserPatch)
+from schemas.user import User, UserPost, UserPatch
 
-from models.crud.users import (read_users, 
-                               read_user_by_id, 
-                               create_user, 
+from models.user.retrieve import read_users, read_user_by_id
+
+from models.crud.users import (create_user, 
                                update_user,
                                remove_user)
 
@@ -61,33 +59,61 @@ DELETE_USERS_METADATA: dict = {
 router = APIRouter(**API_ROUTER_CONFIG)
 
 
+# @router.get('/', **GET_USERS_METADATA)
+# async def get_users(name_like: Annotated[str, Query(description='Filter for the user name')] = '%', 
+#                     surname_like: Annotated[str, Query(description='Filter for the user surname')] = '%', 
+#                     email_like: Annotated[str, Query(description='Filter for the user email')] = '%',
+#                     include_deleted: bool = False, 
+#                     db_session: Session = Depends(get_db)):
+    
+#     users: list[User] = []
+    
+#     db_users = read_users(db_session, name_like, surname_like, email_like, include_deleted)
+#     if not db_users:
+#         raise HTTPException(status_code=200, detail='No users found')
+#     else:                
+#         users = [User(**db_user) for db_user in db_users]
+
+#     return users
+
 @router.get('/', **GET_USERS_METADATA)
 async def get_users(name_like: Annotated[str, Query(description='Filter for the user name')] = '%', 
                     surname_like: Annotated[str, Query(description='Filter for the user surname')] = '%', 
                     email_like: Annotated[str, Query(description='Filter for the user email')] = '%',
-                    include_deleted: bool = None, 
+                    include_deleted: bool = False, 
                     db_session: Session = Depends(get_db)):
     
     users: list[User] = []
     
-    db_users = read_users(db_session, name_like, surname_like, email_like, include_deleted)
-    if not db_users:
-        raise HTTPException(status_code=200, detail='No users found')
-    else:                
-        users = [User(**db_user) for db_user in db_users]
-
-    return users
-
-
-@router.get('/{user_id}', **GET_USERS_BY_ID_METADATA)
-async def get_user_by_id(user_id: Annotated[UUID, Path(description='User ID of the user to select')], db_session: Session = Depends(get_db)):
-      
-    db_user = read_user_by_id(db_session, user_id)
-    if db_user:
-        return User(**db_user)
-    else:
-        raise HTTPException(status_code=200, detail='No user found')
+    users = read_users(db_session, name_like, surname_like, email_like, include_deleted)
+    if users:
+        return users
     
+    raise HTTPException(status_code=404, detail='No users found')
+
+
+# @router.get('/{user_id}', **GET_USERS_BY_ID_METADATA)
+# async def get_user_by_id(user_id: Annotated[UUID, Path(description='User ID of the user to select')], 
+#                          include_deleted: bool = False, 
+#                          db_session: Session = Depends(get_db)):
+      
+#     db_user = read_user_by_id(db_session, user_id, include_deleted)
+#     if db_user:
+#         return User(**db_user)
+#     else:
+#         raise HTTPException(status_code=200, detail='No user found')
+    
+@router.get('/{user_id}', **GET_USERS_BY_ID_METADATA)
+async def get_user_by_id(user_id: Annotated[UUID, Path(description='User ID of the user to select')], 
+                         include_deleted: bool = False, 
+                         db_session: Session = Depends(get_db)):
+      
+    user = read_user_by_id(db_session, user_id, include_deleted)
+    if user is not None:
+        return user
+    
+    raise HTTPException(status_code=404, detail='No user found')
+
 
 @router.post('/', **POST_USERS_METADATA)
 async def post_user(user_post: UserPost, db_session: Session = Depends(get_db)):

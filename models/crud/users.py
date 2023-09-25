@@ -14,14 +14,14 @@ from uuid import UUID
 from models.utils import now_with_timezone
 
 def read_users(session: Session, name_like: str, surname_like: str, 
-               email_like: str, is_deleted: bool) -> list[dict]:
+               email_like: str, include_deleted: bool) -> list[dict]:
   
     users: list = []
     
     sql_statement: Select = select(User) \
                             .where(
                                 and_( \
-                                    True if is_deleted else User.deleted_at.is_(None),
+                                    True if include_deleted else User.deleted_at.is_(None),
                                     User.name.like(name_like),
                                     User.surname.like(surname_like),
                                     User.email.like(email_like))
@@ -36,13 +36,13 @@ def read_users(session: Session, name_like: str, surname_like: str,
     return users
 
 
-def read_user_by_id(session: Session, user_id: UUID) -> dict:
+def read_user_by_id(session: Session, user_id: UUID, include_deleted: bool) -> dict:
 
     user: dict = {}
     
     sql_statement: Select = select(User) \
                             .where(and_( \
-                                User.deleted_at.is_(None),
+                                True if include_deleted else User.deleted_at.is_(None),
                                 User.id == user_id)) \
                             .order_by(User.created_at)             
     
@@ -69,6 +69,14 @@ def create_user(session: Session, new_user: dict) -> dict:
         session.commit()
 
     return user
+
+
+def user_is_deleted(session: Session, user_id: UUID) -> bool:
+
+    sql_statement: Select = select(User.deleted_at) \
+                            .where(User.id == user_id)
+    
+    return session.scalar(sql_statement) is not None
 
 
 def update_user(session: Session, user_id: UUID, updated_user_info: dict):      
