@@ -6,15 +6,12 @@ from fastapi import (APIRouter,
 
 from models.db.utils import get_db
 
-from models.schemas import (BadgeReader, 
-                            BadgeReaderPost, 
-                            BadgeReaderPatch)
+from schemas.badge_reader import BadgeReader, BadgeReaderPost, BadgeReaderPatch
 
-from models.crud.badge_readers import (read_badge_readers, 
-                               read_badge_reader_by_id, 
-                               create_badge_reader, 
-                               update_badge_reader,
-                               remove_badge_reader)
+from models.badge_reader.create import create_badge_reader
+from models.badge_reader.retrieve import retrieve_badge_readers, retrieve_badge_reader_by_id
+from models.badge_reader.update import update_badge_reader
+from models.badge_reader.delete import remove_badge_reader
 
 from sqlalchemy.orm import Session
 from typing import Annotated
@@ -62,29 +59,28 @@ router = APIRouter(**API_ROUTER_CONFIG)
 
 @router.get('/', **GET_BADGE_READERS_METADATA)
 async def get_badge_readers(ip_address_like: Annotated[str, Query(description='Filter for the badge reader IP address')] = '%', 
-                            location_like: Annotated[str, Query(description='Filter for the badge reader location')] = '%',                              
+                            location_like: Annotated[str, Query(description='Filter for the badge reader location')] = '%',
+                            include_deleted: bool = False,                              
                             db_session: Session = Depends(get_db)):
     
-    badge_readers: list[BadgeReader] = []
+    badge_readers: list[BadgeReader] = retrieve_badge_readers(db_session, ip_address_like, location_like, include_deleted)
     
-    db_badge_readers = read_badge_readers(db_session, ip_address_like, location_like)
-    if not db_badge_readers:
-        raise HTTPException(status_code=200, detail='No badge readers found')
-    else:
-        badge_readers = [db_badge_reader for db_badge_reader in db_badge_readers]
+    if not badge_readers:
+        raise HTTPException(status_code=404, detail='No badge readers found')
 
     return badge_readers
 
 
 @router.get('/{badge_reader_id}', **GET_BADGE_READERS_BY_ID_METADATA)
-async def get_badge_reader_by_id(badge_reader_id: Annotated[UUID, Path(description='BadgeReader ID of the BadgeReader to select')], 
+async def get_badge_reader_by_id(badge_reader_id: Annotated[UUID, Path(description='BadgeReader ID of the BadgeReader to select')],
+                                 include_deleted: bool = False,
                                  db_session: Session = Depends(get_db)):
       
-    db_badge_reader = read_badge_reader_by_id(db_session, badge_reader_id)
-    if db_badge_reader:
-        return BadgeReader(**db_badge_reader)
+    badge_reader: BadgeReader = retrieve_badge_reader_by_id(db_session, badge_reader_id, include_deleted)
+    if badge_reader:
+        return badge_reader
     else:
-        raise HTTPException(status_code=200, detail='No badge reader found')
+        raise HTTPException(status_code=404, detail='Badge reader not found')
     
 
 @router.post('/', **POST_BADGE_READERS_METADATA)

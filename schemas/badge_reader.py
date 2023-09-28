@@ -1,5 +1,4 @@
-from __future__ import annotations
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from uuid import UUID
 
 
@@ -23,14 +22,3 @@ class BadgeReaderPatch(BaseModel):
     ip_address: str | None = None
     location: str | None = None
     badge_ids: list[UUID] | None = None
-
-
-class AccessPost(BaseModel):
-    id: UUID | None = None    
-    badge_id: UUID
-    badge_reader_id: UUID
-
-
-class Access(AccessPost):
-    in_timestamp: str | None = None
-    out_timestamp: str | None = None

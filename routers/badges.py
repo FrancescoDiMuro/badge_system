@@ -6,7 +6,7 @@ from fastapi import (APIRouter,
 
 from models.db.utils import get_db
 
-from models.schemas import (Badge, 
+from schemas.badge import (Badge, 
                             BadgePost, 
                             BadgePatch)
 

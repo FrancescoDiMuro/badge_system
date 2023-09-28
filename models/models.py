@@ -10,20 +10,6 @@ class Base(DeclarativeBase):
     pass
 
 
-class User(Base):
-
-    __tablename__ = 'users'
-
-    id: Mapped[UUID] = mapped_column(primary_key=True, nullable=False)
-    name: Mapped[str] = mapped_column(nullable=False)
-    surname: Mapped[str] = mapped_column(nullable=False)
-    email: Mapped[str] = mapped_column(nullable=False)
-    phone: Mapped[str] = mapped_column(nullable=False)
-    created_at: Mapped[str] = mapped_column(nullable=False, default=now_with_timezone)
-    updated_at: Mapped[str] = mapped_column(nullable=True)
-    deleted_at: Mapped[str] = mapped_column(nullable=True)
-
-
 # Association table for managing many-to-many relationship between BadgeReaders and Badges
 badge_readers_badges = Table('badge_readers_badges',
                              Base.metadata,
