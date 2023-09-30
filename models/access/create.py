@@ -1,7 +1,6 @@
 import schemas.access
 from models.access.access import Access
 from models.badge.badge import Badge
-from models.badge_reader.badge_reader import BadgeReader
 from models.utils import get_fields_from_model, now_with_timezone
 from sqlalchemy import Insert, Select, Update, insert, select, update, and_
 from sqlalchemy.orm import Session
@@ -12,7 +11,7 @@ def do_access(session: Session, badge_id: UUID, badge_reader_id: UUID) -> schema
     
     new_access: dict = {}
 
-    # Checking if the badge exists and the user has the rights to access the area
+    # Checking if the badge exists and the user has the right to access the area
     sql_statement: Select = select(Badge) \
                             .where(Badge.id == badge_id)
     
