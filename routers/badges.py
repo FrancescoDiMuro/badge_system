@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends, Path, Query
+from fastapi.responses import StreamingResponse
 from db.utils import get_db
 from models.badge.create import create_badge
-from models.badge.retrieve import retrieve_badges, retrieve_badge_by_id
+from models.badge.retrieve import retrieve_badges, retrieve_badge_by_id, retrieve_badge_qr_code
 from models.badge.update import update_badge
 from models.badge.delete import remove_badge
 from schemas.badge import Badge, BadgePost, BadgePatch
@@ -72,6 +73,17 @@ async def get_badge_by_id(badge_id: Annotated[UUID, Path(description='Badge ID o
         return badge
     else:
         raise HTTPException(status_code=404, detail='Badge not found')
+    
+
+@router.get('/{badge_id}/qr')
+async def get_badge_qr_code(badge_id: UUID, db_session: Session = Depends(get_db)):
+    
+    badge_code = retrieve_badge_qr_code(db_session, badge_id)
+    
+    if badge_code:
+        return StreamingResponse(badge_code, media_type='image/png')
+    
+    raise HTTPException(status_code=404, detail='Badge not found')
     
 
 @router.post('/', **POST_BADGES_METADATA)

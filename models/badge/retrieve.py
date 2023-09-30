@@ -1,7 +1,8 @@
 import schemas.badge
-
 from models.utils import get_fields_from_model
 from models.badge.badge import Badge
+from models.badge.utils import badge_code_to_qr_code
+from qrcode.image.pil import PilImage
 from sqlalchemy import Select, select, and_
 from sqlalchemy.orm import Session
 from uuid import UUID
@@ -47,4 +48,17 @@ def retrieve_badge_by_id(session: Session, badge_id: UUID, include_deleted: bool
 
         return badge
 
+    return None
+
+
+def retrieve_badge_qr_code(session: Session, badge_id: UUID) -> PilImage | None:
+
+    sql_statement: Select = select(Badge.code) \
+                            .where(Badge.id == badge_id)
+    
+    badge_code = session.scalar(sql_statement)
+
+    if badge_code:
+        return badge_code_to_qr_code(badge_code)
+    
     return None
