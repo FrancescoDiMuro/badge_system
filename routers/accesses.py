@@ -1,16 +1,8 @@
-from fastapi import (APIRouter, 
-                     HTTPException, 
-                     Depends, 
-                     Query)
-
-from models.db.utils import get_db
-
-from models.schemas import (Access,
-                            AccessPost)
-
-from models.crud.accesses import (read_accesses, 
-                                  do_access)
-
+from fastapi import APIRouter, HTTPException, Depends, Query
+from db.utils import get_db
+from models.access.create import do_access
+from models.access.retrieve import read_accesses
+from schemas.access import Access, AccessPost
 from sqlalchemy.orm import Session
 from typing import Annotated
 from uuid import UUID
@@ -41,14 +33,11 @@ async def get_users(in_timestamp_min: Annotated[str, Query(description='Filter f
                     in_timestamp_max: Annotated[str, Query(description='Filter for in_timestamp_min')] = '', 
                     db_session: Session = Depends(get_db)):
     
-    accesses: list[Access] = []
     
-    db_accesses = read_accesses(db_session, in_timestamp_min, in_timestamp_max)
-    if not db_accesses:
-        raise HTTPException(status_code=200, detail='No accesses found')
-    else:                
-        accesses = [Access(**db_access) for db_access in db_accesses]
-
+    accesses: list[Access] = read_accesses(db_session, in_timestamp_min, in_timestamp_max)
+    if not accesses:
+        raise HTTPException(status_code=404, detail='No access found')
+    
     return accesses
   
 
@@ -62,8 +51,8 @@ async def post_user(access_post: AccessPost, db_session: Session = Depends(get_d
 
     # Do the access depending of entering/exiting a specified area
     access = do_access(db_session, badge_id, badge_reader_id)
-    
-    # Convert the record to a valid schema object
-    access = Access(**access)
 
-    return access
+    if access:
+        return access
+    else:
+        raise HTTPException(status_code=401, detail='User not authorized')

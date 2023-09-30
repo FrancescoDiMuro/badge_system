@@ -1,18 +1,10 @@
-from fastapi import (APIRouter, 
-                     HTTPException, 
-                     Depends, 
-                     Path, 
-                     Query)
-
-from models.db.utils import get_db
-
-from schemas.badge_reader import BadgeReader, BadgeReaderPost, BadgeReaderPatch
-
+from fastapi import APIRouter, HTTPException, Depends, Path, Query
+from db.utils import get_db
 from models.badge_reader.create import create_badge_reader
 from models.badge_reader.retrieve import retrieve_badge_readers, retrieve_badge_reader_by_id
 from models.badge_reader.update import update_badge_reader
 from models.badge_reader.delete import remove_badge_reader
-
+from schemas.badge_reader import BadgeReader, BadgeReaderPost, BadgeReaderPatch
 from sqlalchemy.orm import Session
 from typing import Annotated
 from uuid import UUID, uuid4
@@ -93,25 +85,22 @@ async def post_badge_reader(badge_reader_post: BadgeReaderPost, db_session: Sess
     new_badge_reader['id'] = uuid4()
 
     # Create the record
-    badge_reader = create_badge_reader(db_session, new_badge_reader)
-    
-    # Convert the record to a valid schema object
-    badge_reader = BadgeReader(**badge_reader)
+    badge_reader: BadgeReader = create_badge_reader(db_session, new_badge_reader)
 
     return badge_reader
 
 
 @router.patch('/{badge_reader_id}', **PATCH_BADGE_READER_METADATA)
 def patch_badge_reader(badge_reader_id: Annotated[UUID, Path(description='Badge reader ID of the badge reader to update')], 
-                       badge_reader: BadgeReaderPatch, 
+                       badge_reader_patch: BadgeReaderPatch, 
                        db_session: Session = Depends(get_db)):
     
     # Obtain badge reader data that has been updated, excluding what hasn't been set
-    updated_badge_reader_info: dict = badge_reader.model_dump(exclude_unset=True)
+    updated_badge_reader_info: dict = badge_reader_patch.model_dump(exclude_unset=True)
 
     # If the user actually filled the dict with some valid info
     if updated_badge_reader_info:
-        updated_badge_reader: BadgeReader = BadgeReader(**update_badge_reader(db_session, badge_reader_id, updated_badge_reader_info))
+        updated_badge_reader: BadgeReader = update_badge_reader(db_session, badge_reader_id, updated_badge_reader_info)
 
         return updated_badge_reader
     
@@ -128,4 +117,4 @@ def delete_badge_reader(badge_reader_id: Annotated[UUID, Path(description='Badge
     if deleted_badge_id:
         return deleted_badge_id
     else:        
-        raise HTTPException(status_code=200, detail='No badge reader found')
+        raise HTTPException(status_code=404, detail='No badge reader found')

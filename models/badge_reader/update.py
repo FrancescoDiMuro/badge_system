@@ -44,9 +44,8 @@ def update_badge_reader(session: Session, badge_reader_id: UUID, badge_reader_up
             current_badge_reader.badges = badges
 
         model_fields: dict = get_fields_from_model(current_badge_reader)
-        badge_reader: schemas.badge_reader.BadgeReader = schemas.badge_reader.BadgeReader(**model_fields)
-
-        badge_reader['badge_ids'] = badge_ids
+        model_fields['badge_ids'] = badge_ids
+        badge_reader: schemas.badge_reader.BadgeReader = schemas.badge_reader.BadgeReader(**model_fields)        
 
         session.commit()
 

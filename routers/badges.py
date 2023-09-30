@@ -1,21 +1,10 @@
-from fastapi import (APIRouter, 
-                     HTTPException, 
-                     Depends, 
-                     Path, 
-                     Query)
-
-from models.db.utils import get_db
-
-from schemas.badge import (Badge, 
-                            BadgePost, 
-                            BadgePatch)
-
-from models.crud.badges import (read_badges, 
-                               read_badge_by_id, 
-                               create_badge, 
-                               update_badge,
-                               remove_badge)
-
+from fastapi import APIRouter, HTTPException, Depends, Path, Query
+from db.utils import get_db
+from models.badge.create import create_badge
+from models.badge.retrieve import retrieve_badges, retrieve_badge_by_id
+from models.badge.update import update_badge
+from models.badge.delete import remove_badge
+from schemas.badge import Badge, BadgePost, BadgePatch
 from sqlalchemy.orm import Session
 from typing import Annotated
 from uuid import UUID, uuid4
@@ -62,28 +51,27 @@ router = APIRouter(**API_ROUTER_CONFIG)
 
 @router.get('/', **GET_BADGES_METADATA)
 async def get_badges(code_like: Annotated[str, Query(description='Filter for the badge code')] = '%',
+                     include_deleted: bool = False,
                      db_session: Session = Depends(get_db)):
     
-    badges: list[Badge] = []
+    badges: list[Badge] = retrieve_badges(db_session, code_like, include_deleted)
     
-    db_badges = read_badges(db_session, code_like)
-    if not db_badges:
-        raise HTTPException(status_code=200, detail='No badges found')
-    else:
-        badges = [db_badge for db_badge in db_badges]
+    if not badges:
+        raise HTTPException(status_code=404, detail='No badges found')
 
     return badges
 
 
 @router.get('/{badge_id}', **GET_BADGES_BY_ID_METADATA)
-async def get_badge_by_id(badge_id: Annotated[UUID, Path(description='Badge ID of the Badge to select')], 
+async def get_badge_by_id(badge_id: Annotated[UUID, Path(description='Badge ID of the Badge to select')],
+                          include_deleted: bool = False,
                           db_session: Session = Depends(get_db)):
       
-    db_badge = read_badge_by_id(db_session, badge_id)
-    if db_badge:
-        return Badge(**db_badge)
+    badge: Badge = retrieve_badge_by_id(db_session, badge_id, include_deleted)
+    if badge:
+        return badge
     else:
-        raise HTTPException(status_code=200, detail='No badge found')
+        raise HTTPException(status_code=404, detail='Badge not found')
     
 
 @router.post('/', **POST_BADGES_METADATA)
@@ -96,25 +84,22 @@ async def post_badge(badge_post: BadgePost, db_session: Session = Depends(get_db
     new_badge['id'] = uuid4()
 
     # Create the record
-    badge = create_badge(db_session, new_badge)
-    
-    # Convert the record to a valid schema object
-    badge = Badge(**badge)
+    badge: Badge = create_badge(db_session, new_badge)
 
     return badge
 
 
 @router.patch('/{badge_id}', **PATCH_BADGES_METADATA)
 def patch_badge_reader(badge_id: Annotated[UUID, Path(description='Badge ID of the badge to update')], 
-                       badge: BadgePatch, 
+                       badge_patch: BadgePatch, 
                        db_session: Session = Depends(get_db)):
     
     # Obtain badge data that has been updated, excluding what hasn't been set
-    updated_badge_info: dict = badge.model_dump(exclude_unset=True)
+    updated_badge_info: dict = badge_patch.model_dump(exclude_unset=True)
 
     # If the user actually filled the dict with some valid info
     if updated_badge_info:
-        updated_badge: Badge = Badge(**update_badge(db_session, badge_id, updated_badge_info))
+        updated_badge: Badge = update_badge(db_session, badge_id, updated_badge_info)
 
         return updated_badge
     
@@ -131,5 +116,5 @@ def delete_badge(badge_id: Annotated[UUID, Path(description='Badge ID of the bad
     if deleted_badge_id:
         return deleted_badge_id
     else:        
-        raise HTTPException(status_code=200, detail='No badge found')
+        raise HTTPException(status_code=404, detail='No badge found')
     

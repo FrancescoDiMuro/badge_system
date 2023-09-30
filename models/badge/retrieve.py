@@ -1,47 +1,50 @@
-import schemas.badge_reader
+import schemas.badge
 
 from models.utils import get_fields_from_model
-from models.badge_reader.badge_reader import BadgeReader
+from models.badge.badge import Badge
 from sqlalchemy import Select, select, and_
 from sqlalchemy.orm import Session
 from uuid import UUID
 
 
-def retrieve_badge_readers(session: Session, ip_address_like: str, location_like: str, include_deleted: bool) -> list[schemas.user.User]:
+def retrieve_badges(session: Session, code_like: str, include_deleted: bool) -> list[schemas.badge.Badge]:   
   
-    badge_readers: list[schemas.user.User] = []
+    badges: list[schemas.badge.Badge] = []
     
-    sql_statement: Select = select(BadgeReader) \
+    sql_statement: Select = select(Badge) \
                             .where(
                                 and_( \
-                                    True if include_deleted else BadgeReader.deleted_at.is_(None),
-                                    BadgeReader.ip_address.like(ip_address_like),
-                                    BadgeReader.location.like(location_like)
+                                    True if include_deleted else Badge.deleted_at.is_(None),
+                                    Badge.code.like(code_like)
                                     )
                                 ) \
-                            .order_by(BadgeReader.created_at)
+                            .order_by(Badge.created_at)
     
     query_result = session.scalars(sql_statement).all()
 
-    badge_readers = [schemas.badge_reader.BadgeReader(**get_fields_from_model(model)) for model in query_result]
+    for model in query_result:
+        model_fields = get_fields_from_model(model)
+        model_fields['badge_reader_ids'] = model.badge_reader_ids
+        badges.append(schemas.badge.Badge(**model_fields))
     
-    return badge_readers
+    return badges
 
 
-def retrieve_badge_reader_by_id(session: Session, badge_reader_id: UUID, include_deleted: bool) -> schemas.badge_reader.BadgeReader | None:
+def retrieve_badge_by_id(session: Session, badge_id: UUID, include_deleted: bool) -> schemas.badge.Badge | None:
     
-    sql_statement: Select = select(BadgeReader) \
+    sql_statement: Select = select(Badge) \
                             .where(
                                 and_( \
-                                    True if include_deleted else BadgeReader.deleted_at.is_(None),
-                                    BadgeReader.id == badge_reader_id)
-                                ) \
-                            .order_by(BadgeReader.created_at)
+                                    True if include_deleted else Badge.deleted_at.is_(None),
+                                    Badge.id == badge_id)
+                                )
     
     query_result = session.scalars(sql_statement).one_or_none()
-    if query_result:        
-        badge_reader: schemas.badge_reader.BadgeReader = schemas.badge_reader.BadgeReader(**get_fields_from_model(query_result))
+    if query_result:
+        model_fields = get_fields_from_model(query_result)
+        model_fields['badge_reader_ids'] = query_result.badge_reader_ids
+        badge: schemas.badge.Badge = schemas.badge.Badge(**model_fields)
 
-        return badge_reader
+        return badge
 
     return None

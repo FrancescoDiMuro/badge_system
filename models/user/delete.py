@@ -15,7 +15,6 @@ def remove_user(session: Session, user_id: UUID) -> dict | None:
     deleted_user_id: UUID = session.scalar(sql_statement)
 
     if deleted_user_id:
-        
         session.commit()
         
         return {'user_id': deleted_user_id}

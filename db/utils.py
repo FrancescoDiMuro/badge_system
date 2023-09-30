@@ -1,12 +1,12 @@
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import sessionmaker
 
-from models.models import Base
+from models.utils import Base
 
 
 db_config_params: dict = {'DB_TYPE': 'sqlite',
                           'DB_API': 'pysqlite',
-                          'DB_RELATIVE_FILE_PATH': 'models/db/data.db'}
+                          'DB_RELATIVE_FILE_PATH': 'db/data.db'}
 
 DB_CONNECTION_STRING: str = '{DB_TYPE}+{DB_API}:///{DB_RELATIVE_FILE_PATH}'.format(**db_config_params)
 

@@ -1,19 +1,11 @@
-from fastapi import (APIRouter, 
-                     HTTPException, 
-                     Depends, 
-                     Path, 
-                     Query)
-
-from models.db.utils import get_db
-
+from fastapi import APIRouter, HTTPException, Depends, Path, Query
+from db.utils import get_db
 from models.user.create import create_user
 from models.user.retrieve import retrieve_users, retrieve_user_by_id
 from models.user.update import update_user
 from models.user.delete import remove_user
 from models.user.utils import user_is_deleted
-
 from schemas.user import User, UserPost, UserPatch
-
 from sqlalchemy.orm import Session
 from typing import Annotated
 from uuid import UUID, uuid4
@@ -94,7 +86,7 @@ async def post_user(user_post: UserPost, db_session: Session = Depends(get_db)):
     user_post['id'] = uuid4()
     
     # Create the record
-    user = create_user(db_session, user_post)
+    user: User = create_user(db_session, user_post)
 
     return user
 

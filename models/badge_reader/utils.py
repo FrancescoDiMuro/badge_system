@@ -4,9 +4,9 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 
 
-def badge_reader_is_deleted(session: Session, badge_reader: UUID) -> bool:
+def badge_reader_is_deleted(session: Session, badge_reader_id: UUID) -> bool:
 
     sql_statement: Select = select(BadgeReader.deleted_at) \
-                            .where(BadgeReader.id == badge_reader)
+                            .where(BadgeReader.id == badge_reader_id)
     
     return session.scalar(sql_statement) is not None
