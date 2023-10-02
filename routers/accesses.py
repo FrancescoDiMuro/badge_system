@@ -29,10 +29,11 @@ router = APIRouter(**API_ROUTER_CONFIG)
 
 
 @router.get('/', **GET_ACCESSES_METADATA)
-async def get_users(in_timestamp_min: Annotated[str, Query(description='Filter for in_timestamp_min')] = '', 
-                    in_timestamp_max: Annotated[str, Query(description='Filter for in_timestamp_min')] = '', 
-                    db_session: Session = Depends(get_db)):
-    
+async def get_accesses(in_timestamp_min: Annotated[str, Query(description='Filter for in_timestamp_min')] = '', 
+                       in_timestamp_max: Annotated[str, Query(description='Filter for in_timestamp_min')] = '',
+                       badge_id: Annotated[UUID, Query(description='Badge ID for the user to search')] = '%',
+                       badge_reader_id: Annotated[UUID, Query(description='Badge Reader ID for the badge reader to search')] = '%',
+                       db_session: Session = Depends(get_db)):
     
     accesses: list[Access] = read_accesses(db_session, in_timestamp_min, in_timestamp_max)
     if not accesses:
@@ -42,7 +43,7 @@ async def get_users(in_timestamp_min: Annotated[str, Query(description='Filter f
   
 
 @router.post('/', **POST_ACCESSES_METADATA)
-async def post_user(access_post: AccessPost, db_session: Session = Depends(get_db)):
+async def post_access(access_post: AccessPost, db_session: Session = Depends(get_db)):
 
     # Get user input in a dict
     new_access: dict = access_post.model_dump()
