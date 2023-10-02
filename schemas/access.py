@@ -9,5 +9,5 @@ class AccessPost(BaseModel):
 
 
 class Access(AccessPost):
-    in_timestamp: str | None = None
+    in_timestamp: str
     out_timestamp: str | None = None

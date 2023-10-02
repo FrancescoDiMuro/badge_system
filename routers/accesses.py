@@ -31,11 +31,11 @@ router = APIRouter(**API_ROUTER_CONFIG)
 @router.get('/', **GET_ACCESSES_METADATA)
 async def get_accesses(in_timestamp_min: Annotated[str, Query(description='Filter for in_timestamp_min')] = '', 
                        in_timestamp_max: Annotated[str, Query(description='Filter for in_timestamp_min')] = '',
-                       badge_id: Annotated[UUID, Query(description='Badge ID for the user to search')] = '%',
-                       badge_reader_id: Annotated[UUID, Query(description='Badge Reader ID for the badge reader to search')] = '%',
+                       badge_id: Annotated[UUID, Query(description='Badge ID for the user to search')] = None,
+                       badge_reader_id: Annotated[UUID, Query(description='Badge Reader ID for the badge reader to search')] = None,
                        db_session: Session = Depends(get_db)):
     
-    accesses: list[Access] = read_accesses(db_session, in_timestamp_min, in_timestamp_max)
+    accesses: list[Access] = read_accesses(db_session, in_timestamp_min, in_timestamp_max, badge_id, badge_reader_id)
     if not accesses:
         raise HTTPException(status_code=404, detail='No access found')
     
