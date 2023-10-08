@@ -32,7 +32,7 @@ The access information (the user's badge ID, the badge reader that read it, the 
 The logic that was developed for saving login information is described below.
 
 A user can access and exit only one area at a time, assuming that the entry and exit readings are consequent, having the location constraint where a user cannot clock in to a location and clock in. exited elsewhere.<br>
-Making this premise, an _INSERT -> UPDATE_ type logic was adopted;<br>
+Making this premise, an _UPSERT_ type logic was adopted;<br>
 when a user clocks in, this is saved in the access table, inserting the badge_id, the badge_reader_id and the entry date/time in the same.<br>
 When the user clocks in again (with the same badge and at the same badge reader), the access ID is recovered, updating the record's exit date/time information.<br>
 In this way, each record collects the information necessary to reconstruct the movements of each user in a simple and intuitive way, giving the possibility of calculating the time spent in each place, the number of accesses made in a specific area, and much other information .
