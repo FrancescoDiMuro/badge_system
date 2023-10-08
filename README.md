@@ -113,9 +113,9 @@ badge_system
 ## Installation
 
 The project can be installed:
-- via [virtualenv](#markdown-header-virtual-environment)
-- via [Docker](#markdown-header-docker) (Dockerfile + CLI)
-- via [Docker Compose](#markdown-header-docker-compose) (docker-compose.yaml + CLI)
+- via [virtualenv](#virtual-environment)
+- via [Docker](#with-docker) (Dockerfile + CLI)
+- via [Docker Compose](#with-docker-compose) (docker-compose.yaml + CLI)
 
 #### Virtual Environment
 
