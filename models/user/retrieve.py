@@ -1,5 +1,4 @@
 import schemas.user
-
 from models.utils import get_fields_from_model
 from models.user.user import User
 from sqlalchemy import Select, select, and_
